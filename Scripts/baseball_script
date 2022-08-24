@@ -1,0 +1,46 @@
+--Question 1 Started in 1871 ended in 2016
+select max(yearid) as last_year,
+min(yearid) as start_year
+from appearances
+
+--Question 2 Eddie Gaedel 43 inches, Team SLA and 1 game
+select namefirst, 
+namelast, 
+height,
+teamid,
+g_all
+from people as p
+inner join appearances as a
+on p.playerid = a.playerid
+where height is not null and a.playerid = 'gaedeed01'
+group by namefirst, namelast, height, teamid, g_all
+order by height 
+
+--Question 3 David Price with a salary of 30 mil
+select p.playerid,
+namefirst, 
+namelast,
+schoolid,
+salary
+from people as p
+left join collegeplaying as c
+on c.playerid = p.playerid
+left join salaries as s
+on p.playerid = s.playerid
+where schoolid = 'vandy' and salary is not null
+order by salary desc
+
+
+
+
+
+
+select * 
+from collegeplaying
+
+select * 
+from appearances
+
+select schoolname, schoolid
+from schools
+where schoolname like '%Vand%'
