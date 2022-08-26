@@ -16,30 +16,71 @@ where height is not null and a.playerid = 'gaedeed01'
 group by namefirst, namelast, height, teamid, g_all
 order by height 
 
---Question 3 David Price with a salary of 30 mil
+--Question 3 David Price with a salary of 81 mil
 select p.playerid,
 namefirst, 
 namelast,
 schoolid,
-salary
+MONEY(CAST(SUM(DISTINCT salary) AS numeric)) AS total_salary
 from people as p
 left join collegeplaying as c
 on c.playerid = p.playerid
 left join salaries as s
 on p.playerid = s.playerid
 where schoolid = 'vandy' and salary is not null
-order by salary desc
+group by p.playerid, namefirst,namelast,schoolid
+order by total_salary desc
+
+--Question 4 58934 Infield, 41424 Battery, 29560 Outfield
+select 
+sum(po),
+case when pos = 'OF' then 'Outfield'
+when pos = 'P' then 'Battery'
+when pos = 'C' then 'Battery'
+else 'Infield' end as new_position
+from fielding
+where yearid = 2016
+group by new_position 
+order by sum(po) desc
+
+--Question 5 wrong
+select round(avg(b.so),2) as avg_strike_outs,
+round(avg(b.hr),2) as avg_home_runs,
+b.yearid/10 * 10 as decade
+from batting as b
+left join teams as t
+on t.yearid = b.yearid
+where b.so is not null and b.yearid >= 1920
+group by decade
+order by decade 
 
 
+--Question 6 owingch01 has avg_success of 0.91
+select attempts,
+sb,
+playerid,
+round((cast(sb as numeric)/cast(attempts as numeric)),2) as avg_success
+from
+    (select (sb+cs) as attempts,
+     sb,
+     playerid
+    from batting 
+    where yearid = 2016 and sb > 0) as subquery
+where attempts >= 20
+order by avg_success desc
+
+
+--Question 7
 
 
 
 
 select * 
-from collegeplaying
+from batting
 
 select * 
-from appearances
+from teams
+
 
 select schoolname, schoolid
 from schools
