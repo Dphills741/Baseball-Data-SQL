@@ -43,14 +43,12 @@ where yearid = 2016
 group by new_position 
 order by sum(po) desc
 
---Question 5 wrong
-select round(avg(b.so),2) as avg_strike_outs,
-round(avg(b.hr),2) as avg_home_runs,
-b.yearid/10 * 10 as decade
-from batting as b
-left join teams as t
-on t.yearid = b.yearid
-where b.so is not null and b.yearid >= 1920
+--Question 5 
+select ROUND(CAST(SUM(so) AS DECIMAL)/CAST(SUM(g)/2 AS DECIMAL), 2) AS avg_strikeouts,
+    ROUND(CAST(SUM(hr) AS DECIMAL)/CAST(SUM(g)/2 AS DECIMAL), 2) AS avg_homeruns,
+yearid/10 * 10 as decade
+from teams 
+where so is not null and yearid >= 1920
 group by decade
 order by decade 
 
@@ -70,13 +68,82 @@ where attempts >= 20
 order by avg_success desc
 
 
---Question 7
+--Question 7 sea won 116 did not win world series
+select teamid,
+w
+from teams 
+where yearid between 1970 and 2016 and wswin = 'N'
+order by w desc
+
+--extended 1981 all teams had low games, SLN had 83
+select teamid,
+w 
+from teams
+where (yearid between 1970 and 2016) and wswin = 'Y' and yearid != 1981
+order by w 
+
+-- probably wrong
+select 
+max(w),
+yearid
+from teams
+where (yearid between 1970 and 2016) and yearid != 1981
+group by yearid
+order by max(w) desc
+
+
+select 
+max(w),
+yearid
+from teams
+where (yearid between 1970 and 2016) and yearid != 1981 and wswin = 'Y'
+group by yearid
+order by max(w) desc
+
+--Question 8
+--Top 5
+select round((attendance/games),2) as avg_attendance,
+park,
+team
+from homegames
+where year = 2016 and games >= 10
+group by park,team,games,attendance
+order by avg_attendance desc
+limit 5
+--Bottom 5
+select round((attendance/games),2) as avg_attendance,
+park,
+team
+from homegames
+where year = 2016 and games >= 10
+group by park,team,games,attendance
+order by avg_attendance 
+limit 5
+
+--Question 9
+
+select distinct(a1.playerid),
+a1.awardid,
+a1.lgid,
+a2.lgid,
+namefirst,
+namelast,
+teamid
+from awardsmanagers as a1
+join awardsmanagers as a2
+on a1.playerid = a2.playerid
+join people as p
+on a1.playerid = p.playerid
+join salaries as s
+on a1.playerid = s.playerid
+where a1.awardid like '%TSN%' and a1.lgid = 'NL' and a2.lgid ='AL'
+--Question 10 
 
 
 
 
-select * 
-from batting
+
+
 
 select * 
 from teams
