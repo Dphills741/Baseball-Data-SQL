@@ -102,43 +102,108 @@ order by max(w) desc
 
 --Question 8
 --Top 5
-select round((attendance/games),2) as avg_attendance,
-park,
-team
-from homegames
+select round((h.attendance/games),2) as avg_attendance,
+h.park,
+team,
+park_name,
+t.name
+from homegames as h
+inner join parks
+on h.park = parks.park
+inner join teams as t
+on h.team = t.teamid and h.year = t.yearid
 where year = 2016 and games >= 10
-group by park,team,games,attendance
+group by h.park,team,games,h.attendance,park_name,t.name
 order by avg_attendance desc
 limit 5
 --Bottom 5
-select round((attendance/games),2) as avg_attendance,
-park,
-team
-from homegames
+select round((h.attendance/games),2) as avg_attendance,
+h.park,
+team,
+park_name,
+t.name
+from homegames as h
+inner join parks
+on h.park = parks.park
+inner join teams as t
+on h.team = t.teamid and h.year = t.yearid
 where year = 2016 and games >= 10
-group by park,team,games,attendance
+group by h.park,team,games,h.attendance,park_name,t.name
 order by avg_attendance 
 limit 5
 
---Question 9
 
+--Question 9
 select distinct(a1.playerid),
-a1.awardid,
-a1.lgid,
-a2.lgid,
 namefirst,
 namelast,
-teamid
+a1.awardid,
+a1.lgid,
+a1.yearid,
+a2.lgid,
+a2.yearid
 from awardsmanagers as a1
 join awardsmanagers as a2
 on a1.playerid = a2.playerid
 join people as p
 on a1.playerid = p.playerid
-join salaries as s
-on a1.playerid = s.playerid
-where a1.awardid like '%TSN%' and a1.lgid = 'NL' and a2.lgid ='AL'
---Question 10 
+join managers as m
+on m.yearid = a1.yearid
+where a1.awardid like '%TSN%' and a2.awardid like '%TSN%' and a1.lgid = 'NL' and a2.lgid ='AL'
 
+
+select *
+from appearances
+where playerid = '"leylaji99"'
+
+with NL as (
+select 
+playerid,
+yearid,
+awardid,
+lgid
+from awardsmanagers
+where awardid like '%TSN%' and lgid = 'NL')
+select distinct(NL.playerid),
+namefirst,
+namelast,
+NL.awardid,
+NL.lgid,
+awardsmanagers.lgid
+from awardsmanagers
+join NL 
+ON NL.playerid = awardsmanagers.playerid
+join people as p
+on p.playerid = awardsmanagers.playerid
+where NL.awardid like '%TSN%' and awardsmanagers.lgid = 'AL'
+
+select *
+from awardsmanagers 
+where playerid = 'coxbo01'
+
+--Question 10 
+with hr_2016 as (
+select 
+    max(hr) as max_hr_2016,
+    playerid,
+    yearid
+    from batting 
+    where yearid = 2016 and hr >=1
+    group by playerid, yearid)
+select 
+b.playerid,
+namefirst,
+namelast,
+max_hr_2016,
+debut
+from batting as b
+join hr_2016
+on hr_2016.playerid = b.playerid
+join people as p 
+on b.playerid = p.playerid
+where debut <= '2006' and b.yearid = '2016'
+group by b.playerid,b.yearid,max_hr_2016,debut,namefirst,namelast
+having max(hr) = max_hr_2016
 
 
 
