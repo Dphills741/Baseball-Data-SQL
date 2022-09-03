@@ -4,22 +4,23 @@ min(yearid) as start_year
 from appearances
 
 --Question 2 Eddie Gaedel 43 inches, Team SLA and 1 game
-select namefirst, 
-namelast, 
-height,
-teamid,
-g_all
+select
+concat(p.namefirst, ' ', p.namelast) as name,
+min(height),
+g_all,
+t.name
 from people as p
 inner join appearances as a
 on p.playerid = a.playerid
-where height is not null and a.playerid = 'gaedeed01'
-group by namefirst, namelast, height, teamid, g_all
+join teams as t
+using (teamid)
+group by namefirst, namelast, height, g_all,t.name
 order by height 
+limit 1
 
 --Question 3 David Price with a salary of 81 mil
-select p.playerid,
-namefirst, 
-namelast,
+select 
+concat(p.namefirst, ' ', p.namelast) as name,
 schoolid,
 MONEY(CAST(SUM(DISTINCT salary) AS numeric)) AS total_salary
 from people as p
@@ -35,8 +36,7 @@ order by total_salary desc
 select 
 sum(po),
 case when pos = 'OF' then 'Outfield'
-when pos = 'P' then 'Battery'
-when pos = 'C' then 'Battery'
+when pos = 'P' or pos = 'C' then 'Battery'
 else 'Infield' end as new_position
 from fielding
 where yearid = 2016
@@ -56,7 +56,7 @@ order by decade
 --Question 6 owingch01 has avg_success of 0.91
 select attempts,
 sb,
-playerid,
+concat(p.namefirst, ' ', p.namelast) as name,
 round((cast(sb as numeric)/cast(attempts as numeric)),2) as avg_success
 from
     (select (sb+cs) as attempts,
@@ -64,49 +64,34 @@ from
      playerid
     from batting 
     where yearid = 2016 and sb > 0) as subquery
+inner join people as p
+using (playerid)
 where attempts >= 20
 order by avg_success desc
 
 
 --Question 7 sea won 116 did not win world series
-select teamid,
+select name,
 w
 from teams 
 where yearid between 1970 and 2016 and wswin = 'N'
 order by w desc
 
 --extended 1981 all teams had low games, SLN had 83
-select teamid,
-w 
+select  name,
+w
 from teams
 where (yearid between 1970 and 2016) and wswin = 'Y' and yearid != 1981
 order by w 
 
--- probably wrong
-select 
-max(w),
-yearid
-from teams
-where (yearid between 1970 and 2016) and yearid != 1981
-group by yearid
-order by max(w) desc
+-- C
 
-
-select 
-max(w),
-yearid
-from teams
-where (yearid between 1970 and 2016) and yearid != 1981 and wswin = 'Y'
-group by yearid
-order by max(w) desc
 
 --Question 8
 --Top 5
 select round((h.attendance/games),2) as avg_attendance,
-h.park,
-team,
-park_name,
-t.name
+name,
+park_name
 from homegames as h
 inner join parks
 on h.park = parks.park
@@ -118,10 +103,8 @@ order by avg_attendance desc
 limit 5
 --Bottom 5
 select round((h.attendance/games),2) as avg_attendance,
-h.park,
-team,
-park_name,
-t.name
+name,
+park_name
 from homegames as h
 inner join parks
 on h.park = parks.park
@@ -135,8 +118,7 @@ limit 5
 
 --Question 9
 select distinct(a1.playerid),
-namefirst,
-namelast,
+concat(p.namefirst, ' ', p.namelast) as name,
 a1.awardid,
 a1.lgid,
 a1.yearid,
@@ -185,28 +167,38 @@ where playerid = 'coxbo01'
 with hr_2016 as (
 select 
     max(hr) as max_hr_2016,
-    playerid,
-    yearid
+    playerid
     from batting 
-    where yearid = 2016 and hr >=1
-    group by playerid, yearid)
+    group by playerid
+    order by max_hr_2016 desc)
 select 
-b.playerid,
-namefirst,
-namelast,
-max_hr_2016,
-debut
+p.namelast || ', ' || p.namefirst AS name,
+sum(hr) as homeruns
 from batting as b
 join hr_2016
 on hr_2016.playerid = b.playerid
-join people as p 
+left join people as p 
 on b.playerid = p.playerid
-where debut <= '2006' and b.yearid = '2016'
-group by b.playerid,b.yearid,max_hr_2016,debut,namefirst,namelast
-having max(hr) = max_hr_2016
+where debut :: DATE <= '2006-12-31' and b.yearid = 2016 and b.hr = max_hr_2016 and hr >= 1
+group by name, hr 
 
+-- Question 11
+select 
+sum(salary) as team_salary,
+teamid,
+yearid
+from salaries
+where yearid >=2000
+group by teamid, yearid
+order by yearid, team_salary desc
 
-
+select teamid,
+w,
+yearid
+from teams 
+where teams.yearid >= 2000
+group by teamid, yearid, w
+order by yearid, w desc 
 
 
 
